@@ -1,0 +1,10 @@
+{
+    "name": "rendragnet/cobbler-api-php-client",
+    "description": "PHP Client for Cobbler API",
+    "require": {
+		"php": ">=5.3.1"
+    },
+	"autoload": {
+        "classmap": ["CobblerApiClient.php"]
+    }
+}
