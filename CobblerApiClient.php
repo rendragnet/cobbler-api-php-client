@@ -306,6 +306,20 @@ class CobblerApiClient {
 		} else {
 			$ethernicName = $params['ethernic'];
 		}
+
+        // Ensure that any existing matching system is removed
+		$systems = $this->findSystem('name', $name);
+        foreach ($systems as $system) {
+            $this->deleteSystem($system);
+        }
+        $systems = $this->findSystem('hostname', $host);
+        foreach ($systems as $system) {
+            $this->deleteSystem($system);
+        }
+        $systems = $this->findSystem('mac_address', $mac);
+        foreach ($systems as $system) {
+            $this->deleteSystem($system);
+        }
 		//Check the unique fields
 		if ($this->existsSystem('name',$name)){
 			throw new Exception('There is already a system using that name');
