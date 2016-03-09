@@ -350,7 +350,7 @@ class CobblerApiClient {
 		$this->_ixrClient->query('modify_system', $system_id, 'modify_interface', $interface, $token);
 		$this->_ixrClient->query('modify_system', $system_id, 'modify_interface', $ethernic, $token);
 		$this->_ixrClient->query('save_system', $system_id, $token);
-		$this->_ixrClient->query('sync', $system_id, $token);
+		$this->_ixrClient->query('sync', $token);
 		
 		if ($this->_ixrClient->isError()) {
 			$this->deleteSystem($name);
