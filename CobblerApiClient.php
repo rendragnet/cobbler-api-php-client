@@ -341,11 +341,11 @@ class CobblerApiClient {
 		$interface['ipv6_prefix-'.$interfaceName] = $dsubnet;
 		
 		$ethernic = array();
-		$ethernic['macaddress-'.$interfaceName] = $mac2;
-		$ethernic['ipaddress-'.$interfaceName] = $ip2;
-		$ethernic['static-'.$interfaceName] = true;
-		$ethernic['netmask-'.$interfaceName] = $netmask;
-		$ethernic['dns_name-'.$interfaceName] = $dnsname;
+		$ethernic['macaddress-'.$ethernicName] = $mac2;
+		$ethernic['ipaddress-'.$ethernicName] = $ip2;
+		$ethernic['static-'.$ethernicName] = true;
+		$ethernic['netmask-'.$ethernicName] = $netmask;
+		$ethernic['dns_name-'.$ethernicName] = $dnsname;
 
 		$this->_ixrClient->query('modify_system', $system_id, 'modify_interface', $interface, $token);
 		$this->_ixrClient->query('modify_system', $system_id, 'modify_interface', $ethernic, $token);
