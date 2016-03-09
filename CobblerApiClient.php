@@ -183,6 +183,19 @@ class CobblerApiClient {
 		return $this->_ixrClient->getResponse();
 	}
 
+       public function listMgmtclass(){
+                $token = $this->auth();
+                $this->_ixrClient->query('get_mgmtclasses');
+
+                if ($this->_ixrClient->isError()) {
+                        throw new Exception($this->_ixrClient->getErrorMessage());
+                }
+
+                return $this->_ixrClient->getResponse();
+        }
+
+
+
 	/**
 	 * Request Cobbler API for list of systems
 	 *
@@ -264,19 +277,35 @@ class CobblerApiClient {
 
 		$name = $params['name'];
 		$host = $params['host'];
+		$dtag = $params['dtag'];
+		$dsubnet = $params['dsubnet'];
+		$sroutes = $params['sroutes'];
 		$mac = $params['mac'];
+		$mac2 = isset($params['mac2'])? $params['mac2'] : '';
+		$ip = isset($params['ip']) ? $params['ip'] : '';
+		$ip2 = isset($params['ip2']) ? $params['ip2'] : '';
+		$netmask = isset($params['netmask']) ? $params['netmask'] : '';
+		$gateway = isset($params['gateway']) ? $params['gateway'] : '';
+		$dnsnames = isset($params['dnsnames']) ? $params['dnsnames'] : '';
 		$profile = $params['profile'];
+		
+		$kernel_options = isset($params['kernel_options']) ? $params['kernel_options'] : '';
+		$ksmeta = isset($params['ksmeta']) ? $params['ksmeta'] : '';
+		$comment = isset($params['comment']) ? $params['comment'] : '';
+		$name_servers = isset($params['name_servers']) ? $params['name_servers'] : '';
+		$mgmt = isset($params['mgmt']) ? $params['mgmt'] : '';
 
 		if (empty($params['interface'])) {
-			$interfaceName = 'eth0';
+			$interfaceName = 'eth1';
 		}else{
 			$interfaceName = $params['interface'];
 		}
-		
-		$ip = isset($params['ip']) ? $params['ip'] : '';
-		$gateway = isset($params['gateway']) ? $params['gateway'] : '';
-		$dnsnames = isset($params['dnsnames']) ? $params['dnsnames'] : '';
 
+		if (empty($params['ethernic'])) {
+			$ethernicName = 'eth0';
+		} else {
+			$ethernicName = $params['ethernic'];
+		}
 		//Check the unique fields
 		if ($this->existsSystem('name',$name)){
 			throw new Exception('There is already a system using that name');
@@ -295,16 +324,33 @@ class CobblerApiClient {
 		$this->_ixrClient->query('modify_system', $system_id, 'name', $name, $token);
 		$this->_ixrClient->query('modify_system', $system_id, 'hostname', $host, $token);
 		$this->_ixrClient->query('modify_system', $system_id, 'profile', $profile, $token);
+                $this->_ixrClient->query('modify_system', $system_id, 'kernel_options', $kernel_options, $token);
+                $this->_ixrClient->query('modify_system', $system_id, 'ksmeta', $ksmeta, $token);
+                $this->_ixrClient->query('modify_system', $system_id, 'comment', $comment, $token);
+                $this->_ixrClient->query('modify_system', $system_id, 'gateway', $gateway, $token);
+                $this->_ixrClient->query('modify_system', $system_id, 'name_servers', $name_servers, $token);
+                $this->_ixrClient->query('modify_system', $system_id, 'mgmt_classes', $mgmt, $token);
+                $this->_ixrClient->query('modify_system', $system_id, 'enable_gpxe', 1, $token);
+                $this->_ixrClient->query('modify_system', $system_id, 'status', 'acceptance', $token);
 
 		$interface = array();
 		$interface['macaddress-'.$interfaceName] = $mac;
-		
 		$interface['ipaddress-'.$interfaceName] = $ip;
-		$interface['gateway-'.$interfaceName] = $gateway;
-		$interface['dnsname-'.$interfaceName] = $dnsnames;
+		$interface['dhcp_tag-'.$interfaceName] = $dtag;
+		$interface['static_routes-'.$interfaceName] = $sroutes;
+		$interface['ipv6_prefix-'.$interfaceName] = $dsubnet;
+		
+		$ethernic = array();
+		$ethernic['macaddress-'.$interfaceName] = $mac2;
+		$ethernic['ipaddress-'.$interfaceName] = $ip2;
+		$ethernic['static-'.$interfaceName] = true;
+		$ethernic['netmask-'.$interfaceName] = $netmask;
+		$ethernic['dns_name-'.$interfaceName] = $dnsname;
 
 		$this->_ixrClient->query('modify_system', $system_id, 'modify_interface', $interface, $token);
+		$this->_ixrClient->query('modify_system', $system_id, 'modify_interface', $ethernic, $token);
 		$this->_ixrClient->query('save_system', $system_id, $token);
+		$this->_ixrClient->query('sync', $system_id, $token);
 		
 		if ($this->_ixrClient->isError()) {
 			$this->deleteSystem($name);
@@ -377,6 +423,23 @@ class CobblerApiClient {
 		return true;
 
 	}
+
+        public function Statustoproduction($system_name){
+
+                $token = $this->auth();
+                $handle = $this->getSystemHandle($token, $system_name);
+                $this->_ixrClient->query('modify_system', $handle,'status', 'production', $token);
+                $this->_ixrClient->query('save_system', $handle, $token);
+
+
+                if ($this->_ixrClient->isError()) {
+                        throw new Exception($this->_ixrClient->getErrorMessage());
+                }
+
+                return true;
+
+        }
+
 
 	/**
 	 * Request Cobbler API to set up a SSH key for an exiting system. If the system has already a SSH key,
