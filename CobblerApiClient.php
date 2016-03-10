@@ -166,6 +166,24 @@ class CobblerApiClient {
 		return sizeof($systems) > 0;
 	}
 
+
+  /**
+    * Request Cobbler API for one system
+    *
+    * @access public
+    * @return One System
+    */
+    public function getSystem($name){
+        $token = $this->auth();
+        $this->_ixrClient->query('get_system', $name);
+
+        if ($this->_ixrClient->isError()) {
+            throw new Exception($this->_ixrClient->getErrorMessage());
+        }
+
+        return $this->_ixrClient->getResponse();
+    }
+
 	/**
 	 * Request Cobbler API for list of systems
 	 *
