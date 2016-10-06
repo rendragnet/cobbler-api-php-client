@@ -328,15 +328,24 @@ class CobblerApiClient {
         // Ensure that any existing matching system is removed
 		$systems = $this->findSystem('name', $name);
         foreach ($systems as $system) {
+          try {
             $this->deleteSystem($system);
+          } catch (\Exception $e) {
+          }
         }
         $systems = $this->findSystem('hostname', $host);
         foreach ($systems as $system) {
+          try {
             $this->deleteSystem($system);
+          } catch (\Exception $e) {
+          }
         }
         $systems = $this->findSystem('mac_address', $mac);
         foreach ($systems as $system) {
+          try {
             $this->deleteSystem($system);
+          } catch (\Exception $e) {
+          }
         }
 		//Check the unique fields
 		if ($this->existsSystem('name',$name)){
