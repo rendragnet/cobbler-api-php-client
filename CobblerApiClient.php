@@ -265,6 +265,14 @@ class CobblerApiClient {
 		return $this->_ixrClient->getResponse();
 	}
 
+  public function query_handleError($system_name, $endpoint, $system_id, $function, $argument, $token) {
+    $this->_ixrClient->query($endpoint, $system_id, $function, $argument, $token);
+		if ($this->_ixrClient->isError()) {
+			$this->deleteSystem($system_name);
+			throw new Exception('Cobbler api call to '.$endpoint.'/'.$function.' returned error - argument was \''.$argument.'\'');
+		}
+  }
+  
 	/**
 	 * Create a new system in Cobbler
 	 *
@@ -362,17 +370,17 @@ class CobblerApiClient {
 
 		$this->_ixrClient->query('new_system',$token);
 		$system_id = $this->_ixrClient->getResponse();
-		$this->_ixrClient->query('modify_system', $system_id, 'name', $name, $token);
-		$this->_ixrClient->query('modify_system', $system_id, 'hostname', $host, $token);
-		$this->_ixrClient->query('modify_system', $system_id, 'profile', $profile, $token);
-                $this->_ixrClient->query('modify_system', $system_id, 'kernel_options', $kernel_options, $token);
-                $this->_ixrClient->query('modify_system', $system_id, 'ksmeta', $ksmeta, $token);
-                $this->_ixrClient->query('modify_system', $system_id, 'comment', $comment, $token);
-                $this->_ixrClient->query('modify_system', $system_id, 'gateway', $gateway, $token);
-                $this->_ixrClient->query('modify_system', $system_id, 'name_servers', $name_servers, $token);
-                $this->_ixrClient->query('modify_system', $system_id, 'mgmt_classes', $mgmt, $token);
-                $this->_ixrClient->query('modify_system', $system_id, 'enable_gpxe', 1, $token);
-                $this->_ixrClient->query('modify_system', $system_id, 'status', 'acceptance', $token);
+		$this->query_handleError($name, 'modify_system', $system_id, 'name', $name, $token);
+		$this->query_handleError($name, 'modify_system', $system_id, 'hostname', $host, $token);
+		$this->query_handleError($name, 'modify_system', $system_id, 'profile', $profile, $token);
+    $this->query_handleError($name, 'modify_system', $system_id, 'kernel_options', $kernel_options, $token);
+    $this->query_handleError($name, 'modify_system', $system_id, 'ksmeta', $ksmeta, $token);
+    $this->query_handleError($name, 'modify_system', $system_id, 'comment', $comment, $token);
+    $this->query_handleError($name, 'modify_system', $system_id, 'gateway', $gateway, $token);
+    $this->query_handleError($name, 'modify_system', $system_id, 'name_servers', $name_servers, $token);
+    $this->query_handleError($name, 'modify_system', $system_id, 'mgmt_classes', $mgmt, $token);
+    $this->query_handleError($name, 'modify_system', $system_id, 'enable_gpxe', 1, $token);
+    $this->query_handleError($name, 'modify_system', $system_id, 'status', 'acceptance', $token);
 
 		$interface = array();
 		$interface['macaddress-'.$interfaceName] = $mac;
@@ -388,15 +396,15 @@ class CobblerApiClient {
 		$ethernic['netmask-'.$ethernicName] = $netmask;
 		$ethernic['dns_name-'.$ethernicName] = $dnsname;
 
-		$this->_ixrClient->query('modify_system', $system_id, 'modify_interface', $interface, $token);
-		$this->_ixrClient->query('modify_system', $system_id, 'modify_interface', $ethernic, $token);
+		$this->query_handleError($name, 'modify_system', $system_id, 'modify_interface', $interface, $token);
+		$this->query_handleError($name, 'modify_system', $system_id, 'modify_interface', $ethernic, $token);
 		$this->_ixrClient->query('save_system', $system_id, $token);
 		$this->_ixrClient->query('sync', $token);
-		
-		if ($this->_ixrClient->isError()) {
-			$this->deleteSystem($name);
-			throw new Exception($this->_ixrClient->getErrorMessage());
-		}
+
+    if ($this->_ixrClient->isError()) {
+      $this->deleteSystem($name);
+      throw new Exception($this->_ixrClient->getErrorMessage());
+    }
 
 		return $system_id;
 	}
@@ -414,7 +422,8 @@ class CobblerApiClient {
 		$this->_ixrClient->query('remove_system', $system_name, $token);
 		
 		if ($this->_ixrClient->isError()) {
-			throw new Exception($this->_ixrClient->getErrorMessage());
+      // Silently exit, we don't want to throw an error when deleting, as it is 99.9% going to be because of an error, or because the system *doesn't* exist.  That's fine.
+			//throw new Exception($this->_ixrClient->getErrorMessage());
 		}
 		
 		return true;
