@@ -269,7 +269,7 @@ class CobblerApiClient {
     $this->_ixrClient->query($endpoint, $system_id, $function, $argument, $token);
 		if ($this->_ixrClient->isError()) {
 			$this->deleteSystem($system_name);
-			throw new Exception('Cobbler api call to '.$endpoint.'/'.$function.' returned error - argument was \''.$argument.'\'');
+			throw new Exception('Cobbler api call to '.$endpoint.'/'.$function.' returned error - argument was \''.print_r($argument, true).'\'');
 		}
   }
   
@@ -355,6 +355,14 @@ class CobblerApiClient {
           } catch (\Exception $e) {
           }
         }
+        $systems = $this->findSystem('ip_address', $ip2);
+        foreach ($systems as $system) {
+          try {
+            $this->deleteSystem($system);
+          } catch (\Exception $e) {
+          }
+        }
+
 		//Check the unique fields
 		if ($this->existsSystem('name',$name)){
 			throw new Exception('There is already a system using that name');
@@ -366,6 +374,10 @@ class CobblerApiClient {
 
 		if ($this->existsSystem('mac_address',$mac)){
 			throw new Exception('There is already a system using that mac address');
+		}
+    
+    if ($this->existsSystem('ip_address',$ip2)){
+			throw new Exception('There is already a system using that IP address');
 		}
 
 		$this->_ixrClient->query('new_system',$token);
@@ -394,7 +406,7 @@ class CobblerApiClient {
 		$ethernic['ipaddress-'.$ethernicName] = $ip2;
 		$ethernic['static-'.$ethernicName] = true;
 		$ethernic['netmask-'.$ethernicName] = $netmask;
-		$ethernic['dns_name-'.$ethernicName] = $dnsname;
+		$ethernic['dns_name-'.$ethernicName] = $dnsnames;
 
 		$this->query_handleError($name, 'modify_system', $system_id, 'modify_interface', $interface, $token);
 		$this->query_handleError($name, 'modify_system', $system_id, 'modify_interface', $ethernic, $token);
