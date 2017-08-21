@@ -139,7 +139,36 @@ class CobblerApiClient {
 		return true;
 
 	}
+	/**
+	 * Generic method to update a system variable on the system
+	 *
+	 * @access protected
+	 * @param string $token       Auth token, required to validate our request to the API
+	 * @param string $system_name Name of the system we want to edit
+	 * @param string $key Name of the system item to edit
+	 * @param string $value Value of the system item to edit
+	 * @return boolean It returns true if everything went fine
+	 */
+	protected function updateVariable($token, $system_name, $key, $value){
 
+		$this->_ixrClient->query('get_system', $system_name);
+		
+		$system = $this->_ixrClient->getResponse();
+		
+		if (!is_array($system)) {
+			throw new Exception('System not found');
+		}
+		
+		$handle = $this->getSystemHandle($token, $system_name);
+		$this->_ixrClient->query('modify_system', $handle, $key, $value, $token);
+		$this->_ixrClient->query('save_system', $handle, $token);
+		
+		if ($this->_ixrClient->isError()) {
+			throw new Exception($this->_ixrClient->getErrorMessage());
+		}
+		return true;
+	}
+	
 	/**
 	 * Generic method for finding systems in Cobbler using one of his attributes
 	 *
@@ -536,7 +565,21 @@ class CobblerApiClient {
 		return true;
 
 	}
-
+	/**
+	 * Request Cobbler API to update the profile on an exiting system.
+	 *
+	 * @access public
+	 * @param string $system_name Name of the system
+	 * @param string $profile new profile name to set
+	 * @return boolean True if everything goes fine, false otherwise
+	 */
+	public function setProfile($system_name, $profile) {
+		$token = $this->auth();
+		$password_crypted = crypt($password);
+		$this->updateMetadata($token, $system_name, 'profile', $profile);
+		return true;
+	}
+	
 	/**
 	 * Request Cobbler API for the current status of the server, to check if is active or being installed
 	 *
