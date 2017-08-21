@@ -575,7 +575,6 @@ class CobblerApiClient {
 	 */
 	public function setProfile($system_name, $profile) {
 		$token = $this->auth();
-		$password_crypted = crypt($password);
 		$this->updateVariable($token, $system_name, 'profile', $profile);
 		return true;
 	}
