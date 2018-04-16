@@ -426,6 +426,7 @@ class CobblerApiClient {
 		$interface = array();
 		$interface['macaddress-'.$interfaceName] = $mac;
 		$interface['ipaddress-'.$interfaceName] = $ip;
+        // DHCP tag needs to be on both interfaces now
 		$interface['dhcp_tag-'.$interfaceName] = $dtag;
 		$interface['static_routes-'.$interfaceName] = $sroutes;
 		$interface['ipv6_prefix-'.$interfaceName] = $dsubnet;
@@ -433,6 +434,8 @@ class CobblerApiClient {
 		$ethernic = array();
 		$ethernic['macaddress-'.$ethernicName] = $mac2;
 		$ethernic['ipaddress-'.$ethernicName] = $ip2;
+        // DHCP tag needs to be on both interfaces now
+		$interface['dhcp_tag-'.$ethernicName] = $dtag;
 		$ethernic['static-'.$ethernicName] = true;
 		$ethernic['netmask-'.$ethernicName] = $netmask;
 		$ethernic['dns_name-'.$ethernicName] = $dnsnames;
