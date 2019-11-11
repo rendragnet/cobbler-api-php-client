@@ -509,6 +509,7 @@ class CobblerApiClient {
 		$handle = $this->getSystemHandle($token, $system_name);
 		$this->_ixrClient->query('modify_system', $handle,'netboot_enabled', False, $token);
 		$this->_ixrClient->query('save_system', $handle, $token);
+		$this->_ixrClient->query('sync', $handle, $token);
 		
 		if ($this->_ixrClient->isError()) {
 			throw new Exception($this->_ixrClient->getErrorMessage());
